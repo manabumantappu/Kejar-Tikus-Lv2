@@ -61,7 +61,7 @@ export default class GameScene extends Phaser.Scene {
     this.createPlayer();
     this.createGhosts();
     this.createHUD();
-    this.createUI();
+    this.createUI(); // ⬅️ SUDAH ADA
   }
 
   /* =====================
@@ -120,7 +120,7 @@ export default class GameScene extends Phaser.Scene {
       this.ghosts.push({
         tileX: g.x,
         tileY: g.y,
-        startX: g.x, // posisi awal untuk respawn
+        startX: g.x,
         startY: g.y,
         moving: false,
         sprite: this.add.sprite(
@@ -157,18 +157,52 @@ export default class GameScene extends Phaser.Scene {
       `❤️ ${this.lives}`,
       { fontSize: "18px", color: "#ff4444" }
     ).setOrigin(0.5, 0);
-
-    this.txtLevel = this.add.text(
-      this.scale.width - 12,
-      24,
-      `L${this.levelIndex + 1}`,
-      { fontSize: "18px", color: "#ffffff" }
-    ).setOrigin(1, 0);
   }
 
   updateHUD() {
     this.txtScore.setText(`SCORE ${this.score}`);
     this.txtLives.setText(`❤️ ${this.lives}`);
+  }
+
+  /* =====================
+     UI (WAJIB ADA)
+  ===================== */
+  createUI() {
+    // PAUSE
+    this.add.text(12, this.scale.height - 36, "⏸", {
+      fontSize: "24px"
+    }).setInteractive().on("pointerdown", () => {
+      this.scene.pause();
+      this.scene.launch("MenuScene");
+    });
+
+    // MUTE
+    const mute = this.add.text(
+      this.scale.width - 36,
+      this.scale.height - 36,
+      "🔊",
+      { fontSize: "24px" }
+    ).setInteractive();
+
+    mute.on("pointerdown", () => {
+      this.sound.mute = !this.sound.mute;
+      mute.setText(this.sound.mute ? "🔇" : "🔊");
+    });
+
+    // TEXT BERJALAN
+    const text = this.add.text(
+      this.scale.width / 2,
+      this.scale.height - 36,
+      "GOOD LUCK! GANBATTE KUDASAI",
+      { fontSize: "14px", color: "#ffffff" }
+    ).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: text,
+      x: { from: this.scale.width + 80, to: -80 },
+      duration: 8000,
+      repeat: -1
+    });
   }
 
   /* =====================
@@ -184,7 +218,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.moveGhosts();
-    this.checkGhostCollision(); // ✅ tambahan aman
+    this.checkGhostCollision();
   }
 
   /* =====================
