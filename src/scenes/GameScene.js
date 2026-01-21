@@ -32,7 +32,7 @@ export default class GameScene extends Phaser.Scene {
  /* ==========================================
      Mode bisa mati true - mode hidup terus false
   ============================================ */
-    this.allowDeath = false; // default: pacman=tikus mode bisa diganti
+    this.allowDeath = true; // default: pacman=tikus mode bisa diganti
 
   }
 
@@ -128,8 +128,8 @@ export default class GameScene extends Phaser.Scene {
       const ghost = {
         tileX: g.x,
         tileY: g.y,
-        startX: g.x,   // ⬅️ MODE TIKUS MATI
-        startY: g.y,   // ⬅️ MODE TIKUS MATI
+        startX: g.x,   // ⬅️ MODE CAT MATI
+        startY: g.y,   // ⬅️ MODE CAT MATI
         moving: false,
         sprite: this.add.sprite(
           this.mapOffsetX + g.x * TILE + TILE / 2,
@@ -291,11 +291,20 @@ export default class GameScene extends Phaser.Scene {
      (MODE CASUAL / CLASSIC)
   ===================== */
   handlePlayerHit() {
-    if (!this.allowDeath) {
-      // MODE AMAN: pacman tidak mati
-      this.cameras.main.shake(150, 0.01);
-      return;
-    }
+  if (!this.allowDeath) {
+    this.cameras.main.shake(150, 0.01);
+    return;
+  }
+
+  this.lives--;
+  this.updateHUD();
+
+  if (this.lives <= 0) {
+    this.gameOver();
+  } else {
+    this.respawnPlayer(); // ✅ PANGGIL, BUKAN DEFINISI
+  }
+}
 
     // MODE CLASSIC (belum aktif)
     this.lives--;
@@ -304,11 +313,36 @@ export default class GameScene extends Phaser.Scene {
     if (this.lives <= 0) {
       this.gameOver();
     } else {
-      this.respawnPlayer();
-    }
-  }
+     respawnPlayer() {
+  this.moving = false;
+
+  this.tileX = this.level.player.x;
+  this.tileY = this.level.player.y;
+
+  this.player.setPosition(
+    this.mapOffsetX + this.tileX * TILE + TILE / 2,
+    HUD_HEIGHT + this.tileY * TILE + TILE / 2
+  );
+}
 /* =====================
-     MODE TIKUS BISA MATI
+   GAME OVER
+===================== */
+gameOver() {
+  this.scene.pause();
+
+  this.add.text(
+    this.scale.width / 2,
+    this.scale.height / 2,
+    "GAME OVER",
+    { fontSize: "36px", color: "#ff0000", fontStyle: "bold" }
+  ).setOrigin(0.5);
+
+  this.time.delayedCall(1500, () => {
+    this.scene.start("MenuScene");
+  });
+}
+/* =====================
+     MODE CAT BISA MATI
   ===================== */
   killGhost(g) {
   // efek kecil
