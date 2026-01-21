@@ -128,6 +128,8 @@ export default class GameScene extends Phaser.Scene {
       const ghost = {
         tileX: g.x,
         tileY: g.y,
+        startX: g.x,   // ⬅️ MODE TIKUS MATI
+        startY: g.y,   // ⬅️ MODE TIKUS MATI
         moving: false,
         sprite: this.add.sprite(
           this.mapOffsetX + g.x * TILE + TILE / 2,
@@ -268,15 +270,22 @@ export default class GameScene extends Phaser.Scene {
    /* =====================
      GHOST COLLISION CHECK
   ===================== */
-  checkGhostCollision() {
-    this.ghosts.forEach(g => {
-      if (g.tileX === this.tileX && g.tileY === this.tileY) {
-        if (!this.frightened) {
-          this.handlePlayerHit();
-        }
+ checkGhostCollision() {
+  this.ghosts.forEach(g => {
+    if (g.tileX === this.tileX && g.tileY === this.tileY) {
+
+      // 🟦 MODE POWER → GHOST MATI
+      if (this.frightened) {
+        this.killGhost(g);
+      } 
+      // 🔴 MODE NORMAL → PLAYER KENA
+      else {
+        this.handlePlayerHit();
       }
-    });
-  }
+
+    }
+  });
+}
 /* =====================
      HANDLE PLAYER HIT
      (MODE CASUAL / CLASSIC)
@@ -298,6 +307,38 @@ export default class GameScene extends Phaser.Scene {
       this.respawnPlayer();
     }
   }
+/* =====================
+     MODE TIKUS BISA MATI
+  ===================== */
+  killGhost(g) {
+  // efek kecil
+  this.cameras.main.shake(100, 0.01);
+
+  // tambah score
+  this.score += 200;
+  this.updateHUD();
+
+  // animasi hilang
+  this.tweens.add({
+    targets: g.sprite,
+    alpha: 0,
+    duration: 200,
+    onComplete: () => {
+      // reset posisi ghost ke awal
+      g.tileX = g.startX ?? g.tileX;
+      g.tileY = g.startY ?? g.tileY;
+
+      g.sprite.setPosition(
+        this.mapOffsetX + g.tileX * TILE + TILE / 2,
+        HUD_HEIGHT + g.tileY * TILE + TILE / 2
+      );
+
+      g.sprite.clearTint();
+      g.sprite.setAlpha(1);
+    }
+  });
+}
+
   /* =====================
      MOVE PLAYER
   ===================== */
