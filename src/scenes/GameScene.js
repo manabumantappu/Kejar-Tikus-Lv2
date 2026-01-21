@@ -32,6 +32,7 @@ export default class GameScene extends Phaser.Scene {
 
     // ✅ PACMAN BISA MATI
     this.allowDeath = true;
+    this.isGameOver = false;
   }
 
   /* =====================
@@ -261,15 +262,20 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  handlePlayerHit() {
-    if (!this.allowDeath) return;
+handlePlayerHit() {
+  if (this.isGameOver) return; // ⬅️ STOP STACK
+  if (!this.allowDeath) return;
 
-    this.lives--;
-    this.updateHUD();
+  this.lives--;
+  this.updateHUD();
 
-    if (this.lives <= 0) this.gameOver();
-    else this.respawnPlayer();
+  if (this.lives <= 0) {
+    this.isGameOver = true;    // ⬅️ KUNCI
+    this.gameOver();
+  } else {
+    this.respawnPlayer();
   }
+}
 
   respawnPlayer() {
     this.moving = false;
